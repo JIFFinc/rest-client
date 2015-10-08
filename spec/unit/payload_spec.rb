@@ -57,6 +57,15 @@ describe RestClient::Payload do
           should eq "foo[]=bar&foo[]=baz"
     end
 
+    it "should properly handle nil values" do
+      RestClient::Payload::UrlEncoded.new({:foo => []}).to_s.
+        should eq "foo[]"
+      RestClient::Payload::UrlEncoded.new({:foo => nil, :bar => nil}).to_s.
+        should eq "foo&bar"
+      RestClient::Payload::UrlEncoded.new({:foo => {:bar => nil}}).to_s.
+        should eq "foo[bar]"
+    end
+
     it 'should not close if stream already closed' do
       p = RestClient::Payload::UrlEncoded.new({'foo ' => 'bar'})
       3.times {p.close}

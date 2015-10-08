@@ -83,15 +83,20 @@ module RestClient
 
       def flatten_params_array value, calculated_key
         result = []
-        value.each do |elem|
-          if elem.is_a? Hash
-            result += flatten_params(elem, calculated_key)
-          elsif elem.is_a? Array
-            result += flatten_params_array(elem, "#{calculated_key}[]")
-          else
-            result << [calculated_key, elem]
+        if value.empty?
+          result << [calculated_key, nil]
+        else
+          value.each do |elem|
+            if elem.is_a? Hash
+              result += flatten_params(elem, calculated_key)
+            elsif elem.is_a? Array
+              result += flatten_params_array(elem, "#{calculated_key}[]")
+            else
+              result << [calculated_key, elem]
+            end
           end
         end
+
         result
       end
 
@@ -140,7 +145,11 @@ module RestClient
     class UrlEncoded < Base
       def build_stream(params = nil)
         @stream = StringIO.new(flatten_params(params).collect do |entry|
-          "#{entry[0]}=#{handle_key(entry[1])}"
+          if entry[1].nil?
+            "#{entry[0]}"
+          else
+            "#{entry[0]}=#{handle_key(entry[1])}"
+          end
         end.join("&"))
         @stream.seek(0)
       end
